@@ -1,0 +1,46 @@
+{% comment %}
+  /**
+   * @param {object} filter - filter object
+   * @param {string} filter_min_value - min value
+   * @param {string} filter_max_value - max value
+   * @param {string} filter_range_min - min range
+   * @param {string} filter_range_max - max range
+   * @param {number} filter_inc - increment value
+   */
+{% endcomment %}
+
+{% liquid 
+  assign value_list = ''
+  for filter_value in filter.values
+    assign value_list = value_list | append: filter_value.value
+    unless forloop.last
+      assign value_list = value_list | append: ','
+    endunless
+  endfor
+  assign param = filter_min_value.param_name
+%}
+
+<numeric-range
+  data-name="{{ param }}"
+  data-min-value="{{ filter_min_value }}"
+  data-min="{{ filter_range_min }}"
+  data-max-value="{{ filter_max_value }}"
+  data-max="{{ filter_range_max }}"
+  data-value-list="{{ value_list }}"
+  data-inc="{{ filter_inc }}">
+  <div class="numeric-range__display-wrapper">
+    <span class="numeric-range__display-min">{{ filter_min_value }}</span>
+    <span class="numeric-range__display-max">{{ filter_max_value }}</span>
+  </div>
+  <div class="numeric-range__slider-wrapper">
+    <div class="numeric-range__slider"></div>
+  </div>
+  <input
+    class="numeric-range__input numeric-range__input-min"
+    value="{{ filter_min_value }}">
+  <input
+    class="numeric-range__input numeric-range__input-max"
+    value="{{ filter_max_value }}">
+</numeric-range>
+<script src="{{ 'nouislider.js' | asset_url }}"></script>
+<script src="{{ 'numeric-range.js' | asset_url }}"></script>

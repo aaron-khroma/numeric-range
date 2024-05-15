@@ -1,0 +1,14 @@
+[
+  {
+    "name": "t:labels.filter_label_list",
+    "settings": [
+      {
+        "type": "html",
+        "id": "filter_label_list", 
+        "label": "t:labels.filter_label_list",
+        "default": "Enter filter labels here",
+        "info": "t:info.filter_label_list"
+      }
+    ]
+  }
+]

@@ -1,0 +1,5 @@
+{
+  "info": {
+    "filter_label_list": "Enter a comma-separated list of labels for all numeric metafield filters which should use a slider. The default increment is 1. Customize the increment by adding \"=#\" after the label, where \"#\" is the increment value. (Ex: \"Width=0.1,Item Quantity,Height=0.25\")."
+  }
+}

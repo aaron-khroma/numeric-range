@@ -1,0 +1,127 @@
+{% liquid
+  # GENERATE FILTER REMOVAL TAGS
+  # This code should be placed where you generate filter removal links.
+  # If the currently generated filter is listed in the settings panel,
+  # it will generate a link that excludes all of that filter's values.
+%}
+{%- for filter in collection.filters -%}
+  {% liquid
+    # Determine whether this filter is numeric
+    assign is_active_numeric = false
+    assign numeric_items = settings.filter_label_list | split: ','
+    for numeric_item in numeric_items
+      assign numeric_label = numeric_item | split: '=' | first
+      if filter.label == numeric_label and filter.active_values.size > 0
+        assign is_active_numeric = true
+      endif
+    endfor
+  %}
+  {% if is_active_numeric %}
+    {% liquid
+      capture qs
+        echo '?'
+        for filter_to_list in collection.filters
+          unless filter_to_list.label == filter.label
+            for value_to_list in filter_to_list.active_values
+              unless forloop.first
+                echo '&'
+              endunless
+              echo value_to_list.param_name
+              echo '='
+              echo value_to_list.value
+            endfor
+          endunless
+        endfor
+      endcapture
+      assign url_to_remove_all = request.path | append: qs
+    %}
+    <li class="removal-tag">
+      <a class="removal-tag__button" href="{{ url_to_remove_all }}">
+        {{ filter.label | escape }}
+      </a>
+      &times;
+    </li>
+  {% else %}
+    {%- for filter_value in filter.active_values -%}
+      <li class="removal-tag">
+        <a class="removal-tag__button" href="{{ filter_value.url_to_remove }}">
+          {{ filter_value.label | escape }}
+        </a>
+        &times;
+      </li>
+    {%- endfor -%}
+  {% endif %}
+{%- endfor -%}
+
+
+
+{% liquid
+  # GENERATE FILTER ELEMENTS
+  # When iterating through filters to display, determines whether this filter 
+  # is on the numeric list and that it has at least two values to filter. If so,
+  # then it renders the snipper with the appropriate values.
+%}
+{%- for filter in collection.filters -%}
+  {%- case filter.type -%}
+    {%- when 'list', 'boolean' -%}
+      {%- case filter.presentation -%}
+        {%- when 'text' -%}
+
+          {%- liquid
+            assign is_numeric = false
+            for numeric_item in numeric_items
+              assign numeric_parts = numeric_item | split: "="
+              assign numeric_label = numeric_parts | first
+              if filter.label == numeric_label and filter.values.size > 1
+                assign is_numeric = true
+                assign numeric_increment = numeric_parts | last
+              endif
+            endfor
+            # Alternatively, if the numeric list setting doesn't work, we can check 
+            #   the first filter option automatically to determine if it's numeric
+          %}
+
+          {% if is_numeric %}
+            {% liquid
+              # Shopify automatically sorts numeric values, so we can rely on first/last for min/max
+              assign filter_min = filter.active_values | first
+              assign filter_max = filter.active_values | last
+              assign filter_lowest = filter.values | first
+              assign filter_highest = filter.values | last
+            %}
+            {%- render 'numeric-range',
+              filter_min_value: filter_min.value,
+              filter_max_value: filter_max.value,
+              filter_range_min: filter_lowest.value,
+              filter_range_max: filter_highest.value,
+              filter_inc: numeric_increment,
+              filter: filter
+            %}
+          {% endif %}
+        {% else %}
+      {% endcase %}
+    {% else %}
+  {% endcase %}
+{% endfor %}
+
+
+
+{% liquid
+  # GENERATE FILTER CHECKBOXES
+  # Shopify's Metafield filter system still requires input from checkboxes,
+  # so these inputs are outputted here and hidden to be manipulated by the
+  # numeric-range custom element during runtime.
+%}
+{%- for filter_value in filter.values -%}
+  {% capture checkbox %}
+    <input
+    id="filter-check-{{ filter_value.param_name }}-{{ filter_value_index }}"
+    type="checkbox"
+    class="filter-check"
+    name="{{ filter_value.param_name }}"
+    value="{{ filter_value.value }}"
+    {% if filter_value.active -%}checked{% endif %}>
+  {% endcapture %}
+  {%- # Place where needed %}
+  {{ checkbox }}
+{% endfor %}
